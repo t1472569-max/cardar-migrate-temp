@@ -2,10 +2,10 @@
 # secret-free; SRC_URL/DST_URL come from env
 M(){ echo "MARKER $*"; }
 export PGCONNECT_TIMEOUT=20
-if psql "$DST_URL" -XAtc "select 1 from public._migrate_done" >/dev/null 2>&1; then M ALREADY_DONE; sleep infinity; fi
+if psql "$DST_URL" -XAtc "select 1 from public._migrate_done" >/dev/null 2>&1; then M ALREADY_DONE; exit 0; fi
 T0=$(date +%s); M START
 psql "$DST_URL" -Xq -v ON_ERROR_STOP=1 -c "create schema if not exists extensions; create extension if not exists pg_trgm schema extensions; create extension if not exists pgcrypto schema extensions;" && M EXT_OK || M EXT_FAIL
-pg_dump "$SRC_URL" -Fc --no-owner --no-privileges -n public -f /tmp/c.dump && M DUMP_OK size=$(du -m /tmp/c.dump|cut -f1)MB secs=$(( $(date +%s)-T0 )) || { M DUMP_FAIL; sleep infinity; }
+pg_dump "$SRC_URL" -Fc --no-owner --no-privileges -n public -f /tmp/c.dump && M DUMP_OK size=$(du -m /tmp/c.dump|cut -f1)MB secs=$(( $(date +%s)-T0 )) || { M DUMP_FAIL; exit 1; }
 pg_restore -d "$DST_URL" -j 4 --no-owner --no-privileges /tmp/c.dump 2>/tmp/r.err; M RESTORE_DONE errors=$(grep -c 'ERROR' /tmp/r.err) secs=$(( $(date +%s)-T0 ))
 grep 'ERROR' /tmp/r.err | cut -c1-200 | sort | uniq -c | head -20 | sed 's/^/MARKER RESTORE_ERR /'
 psql "$DST_URL" -Xq <<'SQL'
@@ -40,4 +40,3 @@ done
 psql "$DST_URL" -Xqc "create table if not exists public._migrate_done(at timestamptz default now()); insert into public._migrate_done default values;"
 M DB_SIZE src=$(psql "$SRC_URL" -XAtc "select pg_size_pretty(pg_database_size(current_database()))") dst=$(psql "$DST_URL" -XAtc "select pg_size_pretty(pg_database_size(current_database()))")
 M DONE total_secs=$(( $(date +%s)-T0 ))
-sleep infinity
