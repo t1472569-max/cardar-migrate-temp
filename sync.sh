@@ -25,7 +25,8 @@ sync_table(){ local T="$1" P C UPD MC MX
 create temp table k(k text); \copy k from '/tmp/f.k'
 \copy (select $C from public."$T" t where row($P)::text in (select k from k)) to '/tmp/rows.copy'
 SQL
-  local SET=$(S -At -c "select string_agg(format('%I=excluded.%I',attname,attname),',' order by attnum) from pg_attribute where attrelid=format('public.%I','$T')::regclass and attnum>0 and not attisdropped and attgenerated=''")
+  local SET=$(S -At -c "select string_agg(format('%I=excluded.%I',attname,attname),',' order by attnum) from pg_attribute where attrelid=format('public.%I','$T')::regclass and attnum>0 and not attisdropped and attgenerated='' and attidentity<>'a' and attnum <> all((select indkey::int2[] from pg_index where indrelid=format('public.%I','$T')::regclass and indisprimary))")
+  [ -z "$SET" ] && SET=$(echo "$P" | cut -d, -f1 | sed 's/.*/&=excluded.&/')
   local OV=$(S -At -c "select 'overriding system value' from pg_attribute where attrelid=format('public.%I','$T')::regclass and attidentity='a' limit 1")
   D -q -v ON_ERROR_STOP=1 <<SQL || return 1
 begin;
