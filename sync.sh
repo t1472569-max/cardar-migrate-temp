@@ -18,6 +18,7 @@ sync_table(){ local T="$1" P C UPD MC MX
   D -At -c "copy (select row($P)::text from public.\"$T\") to stdout" | sort > /tmp/d.k || return 1
   comm -23 /tmp/s.k /tmp/d.k > /tmp/f.k; MC=$(wc -l </tmp/f.k); MX=$(comm -13 /tmp/s.k /tmp/d.k | wc -l)
   if [ -n "$UPD" ]; then S -At -c "copy (select row($P)::text from public.\"$T\" where updated_at > '$SYNC_SINCE') to stdout" >> /tmp/f.k; fi
+  [ "$(wc -l </tmp/s.k)" -lt "${FULL_UPSERT_MAX:-0}" ] && cat /tmp/s.k >> /tmp/f.k
   sort -u -o /tmp/f.k /tmp/f.k; local N=$(wc -l </tmp/f.k)
   [ "$MX" != 0 ] && M EXTRA_ON_TARGET "$T" n=$MX
   [ "$N" = 0 ] && return 0

@@ -1,5 +1,5 @@
 #!/bin/bash
-SYNC_STEP=sync1 SYNC_SINCE="2026-10-24 07:30:00+00" SEQ_MARGIN=1000 exec bash /sync.sh
+SYNC_STEP=sync3 SYNC_SINCE="2026-10-24 09:00:00+00" SEQ_MARGIN=1000 FULL_UPSERT_MAX=50000 exec bash /sync.sh
 # v3 low-memory, resumable, run-once. secret-free; SRC_URL/DST_URL come from env
 M(){ echo "MARKER $(date -u +%H:%M:%S) $*"; }
 export PGCONNECT_TIMEOUT=20
