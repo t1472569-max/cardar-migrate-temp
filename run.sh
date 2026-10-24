@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "MARKER DISABLED"; exit 0
 # secret-free; SRC_URL/DST_URL come from env
 M(){ echo "MARKER $*"; }
 export PGCONNECT_TIMEOUT=20
