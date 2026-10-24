@@ -1,5 +1,5 @@
 #!/bin/bash
-SYNC_STEP=sync4 SYNC_SINCE="2026-10-24 09:40:00+00" SEQ_MARGIN=1000 FULL_UPSERT_MAX=50000 MIRROR_DELETE="cardar_traffic_events" exec bash /sync.sh
+SYNC_STEP=sync5 SYNC_SINCE="2026-10-24 10:00:00+00" SEQ_MARGIN=1000 FULL_UPSERT_MAX=50000 MIRROR_DELETE=ALL exec bash /sync.sh
 # v3 low-memory, resumable, run-once. secret-free; SRC_URL/DST_URL come from env
 M(){ echo "MARKER $(date -u +%H:%M:%S) $*"; }
 export PGCONNECT_TIMEOUT=20

@@ -21,7 +21,7 @@ sync_table(){ local T="$1" P C UPD MC MX
   [ "$(wc -l </tmp/s.k)" -lt "${FULL_UPSERT_MAX:-0}" ] && cat /tmp/s.k >> /tmp/f.k
   sort -u -o /tmp/f.k /tmp/f.k; local N=$(wc -l </tmp/f.k)
   [ "$MX" != 0 ] && M EXTRA_ON_TARGET "$T" n=$MX
-  if [ "$MX" != 0 ] && [[ " $MIRROR_DELETE " == *" $T "* ]]; then
+  if [ "$MX" != 0 ] && { [ "$MIRROR_DELETE" = ALL ] || [[ " $MIRROR_DELETE " == *" $T "* ]]; }; then
     comm -13 /tmp/s.k /tmp/d.k > /tmp/x.k
     D -q -v ON_ERROR_STOP=1 <<SQL || return 1
 create temp table x(k text); \copy x from '/tmp/x.k'
